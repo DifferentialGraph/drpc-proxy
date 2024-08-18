@@ -1,0 +1,39 @@
+version: v1
+port: 12448
+host: 0.0.0.0
+
+#================================= DO NOT MODIFY =================================#
+tls:
+  enabled: true
+  server:
+    certificate: /etc/dshackle/certs/drpc.${HOST}.crt
+    key: /etc/dshackle/certs/drpc.${HOST}.p8.key # key instead of p8.key?
+ 
+auth:
+  enabled: true
+  publicKeyOwner: drpc
+  server:
+    keys:
+      provider-private-key: /etc/dshackle/keys/private-${PROVIDER_NAME}.p8.key
+      external-public-key: /etc/dshackle/keys/public-drpc.pem
+#=================================================================================#
+ 
+cluster:
+  upstreams:
+    - id: mainnet
+      chain: ethereum
+      labels:
+        archive: true
+      method-groups:
+        enabled:
+          - trace
+          - filter #only if you are running nethermind or erigon node
+      connection:
+        ethereum-pos:
+          execution:
+            rpc:
+              url: "http://example2.com:8545"
+            ws:
+              # frameSize: 20Mb
+              # msgSize: 50Mb
+              url: "ws://example2.com:8545"
