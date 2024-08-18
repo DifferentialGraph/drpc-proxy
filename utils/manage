@@ -1,0 +1,17 @@
+#!/bin/bash
+
+drpc-start() {
+
+}
+
+drpc-stop() {
+    
+}
+
+drpc-restart() {
+    drpc-stop && drpc-start
+}
+
+drpc-monitor() {
+    
+}

@@ -1,3 +1,86 @@
 #!/bin/bash
 
-apt install -y whiptail
+docker-install() {
+    if ! grep -q "docker" <<< $(find /etc/apt/ -name *.list | xargs cat | grep  ^[[:space:]]*deb | grep -v deb-src); then
+        echo "Adding Docker repository"
+        mkdir -m 0755 -p /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+            tee /etc/apt/sources.list.d/docker.list > /dev/null
+        apt update && apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-compose
+    fi
+}
+
+nodejs-install() {
+    if [ ! -d "~/.nvm" ]; then
+        apt -y install curl grep
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+        nvm install --lts
+        nvm use --lts
+    fi
+
+    if [ `npm list -g | grep -c pino-pretty` -eq 0 ]; then
+        npm install -g pino-pretty
+    fi
+}
+
+# rsa keys
+rsakeys-generate() {
+    whiptail --title "DRPC Proxy" --yesno "Generate RSA keys?" 8 78 || { echo "User exit"; return; }
+
+    apt -y install openssl
+    openssl genrsa -out ./keys/private-$PROVIDER_NAME.pem 2048
+    openssl rsa -in ./keys/private-$PROVIDER_NAME.pem -pubout -out ./keys/public-$PROVIDER_NAME.pem
+    openssl pkcs8 -topk8 -inform PEM -outform PEM -in ./keys/private-$PROVIDER_NAME.pem -out ./keys/private-$PROVIDER_NAME.p8.key -nocrypt
+    rm ./keys/private-$PROVIDER_NAME.pem
+}
+
+reverseproxy-check() {
+    if [ "$( docker container inspect -f '{{.State.Running}}' nginx-proxy )" = "true" ] && [ "$( docker container inspect -f '{{.State.Running}}' nginx-ssl )" = "true" ]; then
+        docker network connect reverse-proxy drpc-proxy
+    else
+        echo "Error: reverse proxy not installed"
+        exit 1
+    fi
+}
+
+drpcproxy-install() {
+    docker compose --env-file .env.user up -d --remove-orphans --build
+    sleep 1
+    docker network connect reverse-proxy drpc-proxy
+
+    if ! grep -q "#drpc-setup" ~/.bashrc; then
+        echo "Modifying .bashrc ..."
+        DIR="$( cd "$( dirname -- $0 )" && pwd )"
+        echo -e "\n" >> ~/.bashrc
+        echo "#drpc-setup" >> ~/.bashrc
+        echo "export DRPC_DIR=$DIR" >> ~/.bashrc
+        echo 'source $DRPC_DIR/utils/manage' >> ~/.bashrc
+        source ~/.bashrc
+    fi
+}
+
+apt update && apt install -y whiptail
+whiptail --title "DRPC Proxy" --yesno "Install DPRC Proxy?" 8 78 || { echo "User exit"; return; }
+
+# basics
+apt -y install ca-certificates curl gnupg grep apache2-utils
+
+# var
+source .env.user
+
+# docker
+docker-install || { echo "Error: could not install Docker"; return; }
+
+# node.js (better log visualization)
+nodejs-install || { echo "Error: could not install Node.js"; return; }
+
+# rsa keys
+rsakeys-generate
+
+# reverse proxy
+reverseproxy-check
+
+# drpc
+drpcproxy-install

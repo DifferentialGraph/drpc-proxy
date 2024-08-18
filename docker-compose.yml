@@ -2,17 +2,23 @@ volumes:
   certs:
     external: true
     name: reverse-proxy_certs
+
+networks:
+  drpc-proxy:
+    name: drpc-proxy
   
 services:
   dshackle:
-    container_name: dshackle
     image: drpcorg/dshackle:latest
+    container_name: drpc-proxy
     volumes:
       - ./config/config.yaml:/etc/dshackle/dshackle.yaml
       - certs:/etc/dshackle/certs
       - ./keys:/etc/dshackle/keys
-    ports:
-      - "12448:12448"
+    expose:
+      - 12448
+    networks:
+      - drpc-proxy
     environment:
       VIRTUAL_HOST: drpc.${HOST}
       VIRTUAL_PORT: 12448
