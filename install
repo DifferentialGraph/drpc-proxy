@@ -17,6 +17,7 @@ nodejs-install() {
         echo "Adding NVM"
         apt -y install curl grep
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+        source $HOME/.bashrc
         nvm install --lts
         nvm use --lts
     fi
