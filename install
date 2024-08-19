@@ -13,7 +13,8 @@ docker-install() {
 }
 
 nodejs-install() {
-    if [ ! -d "~/.nvm" ]; then
+    if [ ! -d "$HOME/.nvm" ]; then
+        echo "Adding NVM"
         apt -y install curl grep
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
         nvm install --lts
@@ -21,6 +22,7 @@ nodejs-install() {
     fi
 
     if [ `npm list -g | grep -c pino-pretty` -eq 0 ]; then
+        echo "Adding Pino Pretty"
         npm install -g pino-pretty
     fi
 }
@@ -37,11 +39,8 @@ rsakeys-generate() {
 }
 
 reverseproxy-check() {
-    if [ "$( docker container inspect -f '{{.State.Running}}' nginx-proxy )" = "true" ] && [ "$( docker container inspect -f '{{.State.Running}}' nginx-ssl )" = "true" ]; then
-        docker network connect reverse-proxy drpc-proxy
-    else
-        echo "Error: reverse proxy not installed"
-        exit 1
+    if [ "$( docker container inspect -f '{{.State.Running}}' nginx-proxy )" = "false" ] || [ "$( docker container inspect -f '{{.State.Running}}' nginx-ssl )" = "false" ]; then
+        return 1
     fi
 }
 
@@ -77,10 +76,10 @@ docker-install || { echo "Error: could not install Docker"; return; }
 nodejs-install || { echo "Error: could not install Node.js"; return; }
 
 # rsa keys
-rsakeys-generate
+rsakeys-generate || { echo "Error: could not generate RSA keys"; return; }
 
 # reverse proxy
-reverseproxy-check
+reverseproxy-check || { echo "Error: reverse proxy not running"; return; }
 
 # drpc
-drpcproxy-install
+drpcproxy-install || { echo "Error: could not install DRPC proxy"; return; }

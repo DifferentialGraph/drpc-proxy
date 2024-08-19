@@ -20,6 +20,7 @@ services:
     networks:
       - drpc-proxy
     environment:
+      PROVIDER_HOST: ${PROVIDER_HOST}
       VIRTUAL_HOST: drpc.${HOST}
       VIRTUAL_PORT: 12448
       LETSENCRYPT_HOST: drpc.${HOST}

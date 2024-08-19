@@ -1,11 +1,25 @@
 #!/bin/bash
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. $DIR/configure
 
 drpc-start() {
-
+    if [ -f "$DRPC_DIR/docker-compose.yml" ]; then
+        source $DRPC_DIR/.env.user
+        COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user pull
+        COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user up -d --remove-orphans --build
+    else
+        echo "DRPC proxy configuration file not found."
+        return 1
+    fi
 }
 
 drpc-stop() {
-    
+    if [ -f "$DRPC_DIR/docker-compose.yml" ]; then
+        COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user stop
+    else
+        echo "DRPC proxy configuration file not found."
+        return 1
+    fi
 }
 
 drpc-restart() {
@@ -13,5 +27,15 @@ drpc-restart() {
 }
 
 drpc-monitor() {
-    
+    # Check if session name exists
+    SESSIONEXISTS=$(tmux list-sessions | grep reverse-proxy)
+
+    # Set up monitoring interface
+    if [ "$SESSIONEXISTS" = "" ]
+    then
+        tmux new-session -d -s drpc-proxy
+        tmux rename-window -t 0 'drpc-proxy-log' && tmux send-keys -t 'drpc-proxy-log' "docker logs drpc-proxy --tail 10 -f | pino-pretty -c -t" C-m
+        tmux new-window -t $1:2 -n 'drpc-proxy-cli' && tmux send-keys -t 'drpc-proxy-cli' "docker exec -it drpc-proxy sh" C-m 
+    fi
+    tmux attach-session -t drpc-proxy:0
 }

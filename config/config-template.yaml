@@ -6,8 +6,8 @@ host: 0.0.0.0
 tls:
   enabled: true
   server:
-    certificate: /etc/dshackle/certs/drpc.${HOST}.crt
-    key: /etc/dshackle/certs/drpc.${HOST}.p8.key # key instead of p8.key?
+    certificate: /etc/dshackle/certs/drpc.${PROVIDER_HOST}.crt
+    key: /etc/dshackle/certs/drpc.${PROVIDER_HOST}.key # key instead of p8.key?
  
 auth:
   enabled: true
