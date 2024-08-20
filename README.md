@@ -1,4 +1,4 @@
-# Graph Setup
+# DRPC Proxy
 Repository containing the setup for a DRPC proxy (https://drpc.org/docs/providers/setup).
 <p align="center">
   <img width="40%" src="media/drpc-install-prompt.png">
