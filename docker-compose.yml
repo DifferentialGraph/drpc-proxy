@@ -6,6 +6,9 @@ volumes:
 networks:
   drpc-proxy:
     name: drpc-proxy
+  reverse-proxy:
+    external: true
+    name: reverse-proxy
   
 services:
   dshackle:
@@ -19,8 +22,8 @@ services:
       - 12448
     networks:
       - drpc-proxy
+      - reverse-proxy
     environment:
-      PROVIDER_HOST: ${PROVIDER_HOST}
-      VIRTUAL_HOST: drpc.${HOST}
+      VIRTUAL_HOST: drpc.${PROVIDER_HOST}
       VIRTUAL_PORT: 12448
-      LETSENCRYPT_HOST: drpc.${HOST}
+      LETSENCRYPT_HOST: drpc.${PROVIDER_HOST}

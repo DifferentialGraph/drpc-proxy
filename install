@@ -46,9 +46,24 @@ reverseproxy-check() {
 }
 
 drpcproxy-install() {
+    if [ -f "./config/config.yaml" ]; then
+        export PROVIDER_NAME PROVIDER_HOST
+        envsubst < ./config/config.yaml > ./config/config-tmp.yaml
+        rm ./config/config.yaml && mv ./config/config-tmp.yaml ./config/config.yaml
+    else
+        return 1
+    fi
+
     docker compose --env-file .env.user up -d --remove-orphans --build
     sleep 1
-    docker network connect reverse-proxy drpc-proxy
+
+    if [ ! -z "$PROVIDER_CHAINS" ]; then
+        for CHAIN in ${PROVIDER_CHAINS[@]}; do
+            docker network connect $CHAIN drpc-proxy
+        done
+    fi
+
+    unset PROVIDER_NAME PROVIDER_HOST
 
     if ! grep -q "#drpc-setup" ~/.bashrc; then
         echo "Modifying .bashrc ..."

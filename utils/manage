@@ -1,6 +1,5 @@
 #!/bin/bash
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-. $DIR/configure
 
 drpc-start() {
     if [ -f "$DRPC_DIR/docker-compose.yml" ]; then
@@ -28,7 +27,7 @@ drpc-restart() {
 
 drpc-monitor() {
     # Check if session name exists
-    SESSIONEXISTS=$(tmux list-sessions | grep reverse-proxy)
+    SESSIONEXISTS=$(tmux list-sessions | grep drpc-proxy)
 
     # Set up monitoring interface
     if [ "$SESSIONEXISTS" = "" ]
