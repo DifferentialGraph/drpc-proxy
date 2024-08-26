@@ -1,14 +1,22 @@
-#!/bin/bash
+#!/bin/bash -i
+
+basics-install() {
+    apt update
+    apt -y install ca-certificates curl grep git
+}
 
 docker-install() {
     if ! grep -q "docker" <<< $(find /etc/apt/ -name *.list | xargs cat | grep  ^[[:space:]]*deb | grep -v deb-src); then
-        echo "Adding Docker repository"
-        mkdir -m 0755 -p /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-            "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-            tee /etc/apt/sources.list.d/docker.list > /dev/null
-        apt update && apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-compose
+        echo "Installing Docker..."
+        install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        chmod a+r /etc/apt/keyrings/docker.asc
+        echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt update && apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-compose
+        apt -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-compose
     fi
 }
 
@@ -54,6 +62,9 @@ drpcproxy-install() {
         return 1
     fi
 
+    DRPC_CONFIG_PATH=/var/lib/docker/volumes/reverse-proxy_vhost/_data/
+    echo 'grpc_pass grpcs://drpc.'${PROVIDER_HOST}';' > ${DRPC_CONFIG_PATH}/drpc.${PROVIDER_HOST}_location
+
     docker compose --env-file .env.user up -d --remove-orphans --build
     sleep 1
 
@@ -77,25 +88,30 @@ drpcproxy-install() {
 }
 
 apt update && apt install -y whiptail
-whiptail --title "DRPC Proxy" --yesno "Install DPRC Proxy?" 8 78 || { echo "User exit"; return; }
+whiptail --title "DRPC Proxy" --yesno "Install DPRC Proxy?" 8 78 || { echo "User exit"; exit 1; }
 
 # basics
-apt -y install ca-certificates curl gnupg grep apache2-utils
+basics-install || { echo "Error: could not install basic tools"; exit 1; }
 
 # var
-source .env.user
+if [ -f ".env.user" ]; then
+    source .env.user
+else
+    echo "Error: environment file not found";
+    exit 1;
+fi
 
 # docker
-docker-install || { echo "Error: could not install Docker"; return; }
+docker-install || { echo "Error: could not install Docker"; exit 1; }
 
 # node.js (better log visualization)
-nodejs-install || { echo "Error: could not install Node.js"; return; }
+nodejs-install || { echo "Error: could not install Node.js"; exit 1; }
 
 # rsa keys
-rsakeys-generate || { echo "Error: could not generate RSA keys"; return; }
+rsakeys-generate || { echo "Error: could not generate RSA keys"; exit 1; }
 
 # reverse proxy
-reverseproxy-check || { echo "Error: reverse proxy not running"; return; }
+reverseproxy-check || { echo "Error: reverse proxy not running"; exit 1; }
 
 # drpc
-drpcproxy-install || { echo "Error: could not install DRPC proxy"; return; }
+drpcproxy-install || { echo "Error: could not install DRPC proxy"; exit 1; }
