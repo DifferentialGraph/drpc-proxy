@@ -6,6 +6,12 @@ drpc-start() {
         source $DRPC_DIR/.env.user
         COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user pull
         COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user up -d --remove-orphans --build
+
+        if [ ! -z "$PROVIDER_CHAINS" ]; then
+            for CHAIN in ${PROVIDER_CHAINS[@]}; do
+                docker network connect $CHAIN drpc-proxy
+            done
+        fi
     else
         echo "DRPC proxy configuration file not found."
         return 1
