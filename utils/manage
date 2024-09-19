@@ -8,8 +8,9 @@ drpc-start() {
         COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user up -d --remove-orphans --build
 
         if [ ! -z "$PROVIDER_CHAINS" ]; then
+            nets=$(docker container inspect --format '{{range $net,$v := .NetworkSettings.Networks}}{{printf "%s\n" $net}}{{end}}' drpc-proxy)
             for CHAIN in ${PROVIDER_CHAINS[@]}; do
-                docker network connect $CHAIN drpc-proxy
+                [[ ! ${nets[@]} =~ "$CHAIN" ]] && docker network connect $CHAIN drpc-proxy
             done
         fi
     else
