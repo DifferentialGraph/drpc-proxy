@@ -12,12 +12,14 @@ networks:
   
 services:
   dshackle:
-    image: drpcorg/dshackle:latest
+    image: drpcorg/dshackle:${DSHACKLE_TAG:-latest}
     container_name: drpc-proxy
     volumes:
       - ./config/config.yaml:/etc/dshackle/dshackle.yaml
       - certs:/etc/dshackle/certs
       - ./keys:/etc/dshackle/keys
+    env_file:
+      - .env.user
     expose:
       - 12448
     networks:
