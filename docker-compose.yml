@@ -33,6 +33,6 @@ services:
       - drpc-proxy
       - reverse-proxy
     environment:
-      VIRTUAL_HOST: drpc.${PROVIDER_HOST}
+      VIRTUAL_HOST: drpc.${HOST}
       VIRTUAL_PORT: 12448
-      LETSENCRYPT_HOST: drpc.${PROVIDER_HOST}
+      LETSENCRYPT_HOST: drpc.${HOST}

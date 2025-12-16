@@ -42,10 +42,10 @@ rsakeys-generate() {
     whiptail --title "DRPC Proxy" --yesno "Generate RSA keys?" 8 78 || { echo "User exit"; return; }
 
     apt -y install openssl
-    openssl genrsa -out ./keys/private-$PROVIDER_NAME.pem 2048
-    openssl rsa -in ./keys/private-$PROVIDER_NAME.pem -pubout -out ./keys/public-$PROVIDER_NAME.pem
-    openssl pkcs8 -topk8 -inform PEM -outform PEM -in ./keys/private-$PROVIDER_NAME.pem -out ./keys/private-$PROVIDER_NAME.p8.key -nocrypt
-    rm ./keys/private-$PROVIDER_NAME.pem
+    openssl genrsa -out ./keys/private-$PROVIDER.pem 2048
+    openssl rsa -in ./keys/private-$PROVIDER.pem -pubout -out ./keys/public-$PROVIDER.pem
+    openssl pkcs8 -topk8 -inform PEM -outform PEM -in ./keys/private-$PROVIDER.pem -out ./keys/private-$PROVIDER.p8.key -nocrypt
+    rm ./keys/private-$PROVIDER.pem
 }
 
 reverseproxy-check() {
@@ -120,27 +120,27 @@ drpc-start() {
 }
 
 drpcproxy-install() {
-    if [ -f "./config/config.yaml" ]; then
-        export PROVIDER_NAME PROVIDER_HOST
-        envsubst < ./config/config.yaml > ./config/config-tmp.yaml
-        rm ./config/config.yaml && mv ./config/config-tmp.yaml ./config/config.yaml
-    else
-        return 1
-    fi
-
-    DRPC_CONFIG_PATH=/var/lib/docker/volumes/reverse-proxy_vhost/_data/
-    echo 'grpc_pass grpcs://drpc.'${PROVIDER_HOST}';' > ${DRPC_CONFIG_PATH}/drpc.${PROVIDER_HOST}_location
-
-    docker compose --env-file .env.user up -d --remove-orphans --build
-    sleep 1
-
-    if [ ! -z "$PROVIDER_CHAINS" ]; then
-        for CHAIN in ${PROVIDER_CHAINS[@]}; do
-            docker network connect $CHAIN drpc-proxy
-        done
-    fi
-
-    unset PROVIDER_NAME PROVIDER_HOST
+    # if [ -f "./config/config.yaml" ]; then
+    #     export PROVIDER HOST
+    #     envsubst < ./config/config.yaml > ./config/config-tmp.yaml
+    #     rm ./config/config.yaml && mv ./config/config-tmp.yaml ./config/config.yaml
+    # else
+    #     return 1
+    # fi
+    #
+    # DRPC_CONFIG_PATH=/var/lib/docker/volumes/reverse-proxy_vhost/_data/
+    # echo 'grpc_pass grpcs://drpc.'${HOST}';' > ${DRPC_CONFIG_PATH}/drpc.${HOST}_location
+    #
+    # docker compose --env-file .env.user up -d --remove-orphans --build
+    # sleep 1
+    #
+    # if [ ! -z "$PROVIDER_CHAINS" ]; then
+    #     for CHAIN in ${PROVIDER_CHAINS[@]}; do
+    #         docker network connect $CHAIN drpc-proxy
+    #     done
+    # fi
+    #
+    # unset PROVIDER HOST
 
     if ! grep -q "#drpc-setup" ~/.bashrc; then
         echo "Modifying .bashrc ..."
