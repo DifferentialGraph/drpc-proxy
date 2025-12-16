@@ -1,0 +1,19 @@
+version: v1
+port: 12448
+host: 0.0.0.0
+
+#================================= DO NOT MODIFY =================================#
+tls:
+  enabled: true
+  server:
+    certificate: /etc/dshackle/certs/drpc.${HOST}.crt
+    key: /etc/dshackle/certs/drpc.${HOST}.key # key instead of p8.key?
+ 
+auth:
+  enabled: true
+  publicKeyOwner: drpc
+  server:
+    keys:
+      provider-private-key: /etc/dshackle/keys/private-${PROVIDER}.p8.key
+      external-public-key: /etc/dshackle/keys/public-drpc.pem
+#=================================================================================#

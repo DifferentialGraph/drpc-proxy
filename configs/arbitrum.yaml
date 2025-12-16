@@ -1,0 +1,19 @@
+nethermind-archive:
+  - id: ${ID}
+    chain: arbitrum
+    labels:
+      provider: ${PROVIDER}
+      extra_gas_limit: 600000000
+      archive: true
+      has_pre_nitro_redirect: true
+    method-groups:
+      enabled:
+        - debug
+    connection:
+      generic:
+        rpc:
+          url: ${RPC}
+        ws:
+          frameSize: 20Mb
+          msgSize: 50Mb
+          url: ${WS}

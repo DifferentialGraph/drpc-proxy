@@ -2,3 +2,4 @@ config/config.yaml
 .env.user
 keys/*
 !keys/public-drpc.pem
+tmp

@@ -1,0 +1,14 @@
+archive:
+  - id: ${ID}
+    chain: linea
+    labels:
+      provider: ${PROVIDER}
+      archive: true
+    connection:
+      generic:
+        rpc:
+          url: ${RPC}
+        ws:
+          frameSize: 20Mb
+          msgSize: 50Mb
+          url: ${WS}

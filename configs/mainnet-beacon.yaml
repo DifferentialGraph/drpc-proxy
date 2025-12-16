@@ -1,0 +1,13 @@
+erigon-archive:
+  - id: ${ID}
+    chain: eth-beacon-chain
+    labels:
+      provider: ${PROVIDER}
+    connection:
+      generic:
+        rpc:
+          url: ${RPC}
+        ws:
+          frameSize: 20Mb
+          msgSize: 50Mb
+          url: ${WS}

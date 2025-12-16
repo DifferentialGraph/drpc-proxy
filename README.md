@@ -1,5 +1,5 @@
 # DRPC Proxy
-Repository containing the setup for a DRPC proxy (https://drpc.org/docs/providers/setup).
+Repository containing the setup for a [DRPC](https://drpc.org/docs/providers/setup) proxy.
 <p align="center">
   <img width="40%" src="media/drpc-install-prompt.png">
   <img width="40%" src="media/drpc-monitor.png">
@@ -32,3 +32,7 @@ In order to start, stop and restart the DRPC proxy use `drpc-start`, `drpc-stop`
 - `PROVIDER_NAME`: the name of your company.
 - `PROVIDER_HOST`: domain linked to your provider.
 - `PROVIDER_CHAINS`: blockchains supported by your provider.
+
+## Useful links
+- [Upstream config](https://github.com/emeraldpay/dshackle/blob/21cb0f009c7acfd47431a63f75b7b56751b3ad6c/docs/04-upstream-config.adoc#L251)
+- [Erigon methods](https://github.com/erigontech/erigon/blob/6f831548e94950838d4f81b0acafd572d55fb9d1/cmd/rpcdaemon/README.md)

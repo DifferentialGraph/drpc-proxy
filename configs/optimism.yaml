@@ -1,0 +1,40 @@
+reth-archive:
+  - id: ${ID}
+    labels:
+      provider: ${PROVIDER}
+      has_pre_bedrock_redirect: true
+    connection:
+      generic:
+        rpc:
+          url: ${RPC_URL}
+        ws:
+          frameSize: 20Mb
+          msgSize: 50Mb
+          url: ${WS_URL}
+    chain: optimism
+    method-groups:
+      enabled:
+        - debug
+        - filter
+        - trace
+    methods:
+      disabled:
+        - name: eth_maxPriorityFeePerGas
+      enabled:
+        - name: txpool_content # TODO: should be disabled for rollup nodes
+
+geth-archive:
+  - id: optimism
+    chain: optimism
+    labels:
+      provider: decisionBasis
+      archive: true
+      has_pre_bedrock_redirect: true
+    connection:
+      generic:
+        rpc:
+          url: "https://optimism.chainsland.xyz"
+        ws:
+          frameSize: 20Mb
+          msgSize: 50Mb
+          url: "wss://optimism.chainsland.xyz/ws"

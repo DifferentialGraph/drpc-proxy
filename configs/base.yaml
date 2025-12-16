@@ -1,0 +1,22 @@
+reth-archive:
+  - id: ${ID}
+    chain: base
+    labels:
+      provider: ${PROVIDER}
+    method-groups:
+      enabled:
+        - debug
+        - filter
+    methods:
+      enabled:
+        - name: txpool_content
+      disabled:
+        - name: eth_maxPriorityFeePerGas
+    connection:
+      generic:
+        rpc:
+          url: ${RPC}
+        ws:
+          frameSize: 20Mb
+          msgSize: 50Mb
+          url: ${WS}

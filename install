@@ -1,4 +1,5 @@
 #!/bin/bash -i
+[ -z $DRPC_DIR ] && DRPC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%x}}")" && pwd)"
 
 basics-install() {
     apt update
@@ -53,6 +54,71 @@ reverseproxy-check() {
     fi
 }
 
+build_config() {
+    set -euo pipefail
+
+    [ -z $1 ] && { echo "Error: select destination path for config file"; return; }
+    [ -f "$DRPC_DIR/.env.user" ] || { echo "Error: .env.user file not found"; return 1; }
+    source $DRPC_DIR/.env.user
+
+    INPUT="$DRPC_DIR/configs/dshackle.yaml"
+    [ -f "$INPUT" ] || { echo "ERROR: $INPUT does not exist" >&2; return 1 }
+    OUTPUT="${1}/dshackle.yaml"
+
+    export PROVIDER=$PROVIDER HOST=$HOST
+    envsubst < "$INPUT" > "$OUTPUT"
+
+    {
+        echo
+        echo "cluster:"
+        echo "  upstreams:"
+    } >> "$OUTPUT"
+
+    for i in "${!CHAINS[@]}"; do
+        export ID=${IDS[i]} RPC=${RPCS[i]} WS=${WSS[i]}
+
+        CHAIN="${CHAINS[i]}.yaml"
+        if [[ ! -f "$CHAIN" ]]; then
+            echo "WARNING: $CHAIN not found, skipping" >&2
+            continue
+        fi
+
+        CLIENT="${CLIENTS[i]}"
+        awk -v key="$CLIENT" '
+            $0 ~ "^" key ":" { in_block=1; next }  # start after "opt_*:" line
+            /^[^[:space:]]/ && in_block { exit }  # next top-level key = stop
+            in_block { print }                    # lines inside the block
+        ' "$CHAIN" \
+            | envsubst \
+            | sed '/^[[:space:]]*$/d' \
+            | sed 's/^/  /' \
+            >> "$OUTPUT"
+    done
+}
+
+drpc-start() {
+    if [ -f "$DRPC_DIR/docker-compose.yml" ]; then
+        [ -z $CONFIG_PATH ] && ! volume-exists drpc_config && docker volume create drpc_config
+        build_config ${CONFIG_PATH:-"/var/lib/docker/volumes/drpc_config/_data/"}
+
+        [ -z $KEYS_PATH ] && ! volume-exists drpc_keys && docker volume create drpc_keys
+        cp $DRPC_DIR/keys/* ${KEYS_PATH:-"/var/lib/docker/volumes/drpc_keys/_data/"}
+
+        COMPOSE_FILE=$DRPCDIR/docker-compose.yml docker compose --env-file $DRPCDIR/.env.user pull
+        COMPOSE_FILE=$DRPCDIR/docker-compose.yml docker compose --env-file $DRPCDIR/.env.user up -d --remove-orphans --build
+
+        if [ ! -z "$DOCKER_NETWORKS" ]; then
+            nets=$(docker container inspect --format '{{range $net,$v := .NetworkSettings.Networks}}{{printf "%s\n" $net}}{{end}}' drpc-proxy)
+            for NETWORK in ${DOCKER_NETWORKS[@]}; do
+                [[ ! ${nets[@]} =~ "$NETWORK" ]] && docker network connect $NETWORK drpc-proxy
+            done
+        fi
+    else
+        echo "DRPC proxy configuration file not found."
+        return 1
+    fi
+}
+
 drpcproxy-install() {
     if [ -f "./config/config.yaml" ]; then
         export PROVIDER_NAME PROVIDER_HOST
@@ -81,37 +147,39 @@ drpcproxy-install() {
         DIR="$( cd "$( dirname -- $0 )" && pwd )"
         echo -e "\n" >> ~/.bashrc
         echo "#drpc-setup" >> ~/.bashrc
-        echo "export DRPC_DIR=$DIR" >> ~/.bashrc
+        echo "export DRPC_DIR=$DRPC_DIR" >> ~/.bashrc
         echo 'source $DRPC_DIR/utils/manage' >> ~/.bashrc
         source ~/.bashrc
     fi
 }
 
-apt update && apt install -y whiptail
-whiptail --title "DRPC Proxy" --yesno "Install DPRC Proxy?" 8 78 || { echo "User exit"; exit 1; }
+if [ "${1}" != "--source" ]; then
+    apt update && apt install -y whiptail
+    whiptail --title "DRPC Proxy" --yesno "Install DPRC Proxy?" 8 78 || { echo "User exit"; exit 1; }
 
-# basics
-basics-install || { echo "Error: could not install basic tools"; exit 1; }
+    # basics
+    basics-install || { echo "Error: could not install basic tools"; exit 1; }
 
-# var
-if [ -f ".env.user" ]; then
-    source .env.user
-else
-    echo "Error: environment file not found";
-    exit 1;
+    # var
+    if [ -f ".env.user" ]; then
+        source .env.user
+    else
+        echo "Error: environment file not found";
+        exit 1;
+    fi
+
+    # docker
+    docker-install || { echo "Error: could not install Docker"; exit 1; }
+
+    # node.js (better log visualization)
+    nodejs-install || { echo "Error: could not install Node.js"; exit 1; }
+
+    # rsa keys
+    rsakeys-generate || { echo "Error: could not generate RSA keys"; exit 1; }
+
+    # reverse proxy
+    reverseproxy-check || { echo "Error: reverse proxy not running"; exit 1; }
+
+    # drpc
+    drpcproxy-install || { echo "Error: could not install DRPC proxy"; exit 1; }
 fi
-
-# docker
-docker-install || { echo "Error: could not install Docker"; exit 1; }
-
-# node.js (better log visualization)
-nodejs-install || { echo "Error: could not install Node.js"; exit 1; }
-
-# rsa keys
-rsakeys-generate || { echo "Error: could not generate RSA keys"; exit 1; }
-
-# reverse proxy
-reverseproxy-check || { echo "Error: reverse proxy not running"; exit 1; }
-
-# drpc
-drpcproxy-install || { echo "Error: could not install DRPC proxy"; exit 1; }
