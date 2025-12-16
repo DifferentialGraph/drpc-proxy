@@ -62,7 +62,7 @@ build_config() {
     source $DRPC_DIR/.env.user
 
     INPUT="$DRPC_DIR/configs/dshackle.yaml"
-    [ -f "$INPUT" ] || { echo "ERROR: $INPUT does not exist" >&2; return 1 }
+    [ -f "$INPUT" ] || { echo "ERROR: $INPUT does not exist" >&2; return 1; }
     OUTPUT="${1}/dshackle.yaml"
 
     export PROVIDER=$PROVIDER HOST=$HOST
@@ -104,8 +104,8 @@ drpc-start() {
         [ -z $KEYS_PATH ] && ! volume-exists drpc_keys && docker volume create drpc_keys
         cp $DRPC_DIR/keys/* ${KEYS_PATH:-"/var/lib/docker/volumes/drpc_keys/_data/"}
 
-        COMPOSE_FILE=$DRPCDIR/docker-compose.yml docker compose --env-file $DRPCDIR/.env.user pull
-        COMPOSE_FILE=$DRPCDIR/docker-compose.yml docker compose --env-file $DRPCDIR/.env.user up -d --remove-orphans --build
+        COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user pull
+        COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user up -d --remove-orphans --build
 
         if [ ! -z "$DOCKER_NETWORKS" ]; then
             nets=$(docker container inspect --format '{{range $net,$v := .NetworkSettings.Networks}}{{printf "%s\n" $net}}{{end}}' drpc-proxy)
