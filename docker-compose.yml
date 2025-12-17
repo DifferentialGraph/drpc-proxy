@@ -15,9 +15,9 @@ services:
     image: drpcorg/dshackle:${DSHACKLE_TAG:-latest}
     container_name: drpc-proxy
     volumes:
-      - ${CONFIG_PATH}/${PROVIDER}-dshackle.yaml:/etc/dshackle/dshackle.yaml
+      - ${CONFIG_PATH:-./}/${PROVIDER}-dshackle.yaml:/etc/dshackle/dshackle.yaml
       - certs:/etc/dshackle/certs
-      - ${KEYS_PATH:-"./keys"}:/etc/dshackle/keys
+      - ${KEYS_PATH:-./keys}:/etc/dshackle/keys
     env_file:
       - .env.user
     expose:
