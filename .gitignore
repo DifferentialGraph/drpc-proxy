@@ -1,5 +1,4 @@
-config/config.yaml
 .env.user
+*-dshackle.yaml
 keys/*
 !keys/public-drpc.pem
-tmp
