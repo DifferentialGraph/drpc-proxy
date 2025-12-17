@@ -6,11 +6,11 @@ reth-archive:
     connection:
       generic:
         rpc:
-          url: ${RPC_URL}
+          url: ${RPC}
         ws:
           frameSize: 20Mb
           msgSize: 50Mb
-          url: ${WS_URL}
+          url: ${WS}
     chain: optimism
     method-groups:
       enabled:
