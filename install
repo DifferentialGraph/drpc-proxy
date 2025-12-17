@@ -99,9 +99,6 @@ drpc-start() {
     if [ -f "$DRPC_DIR/docker-compose.yml" ]; then
         build_config ${CONFIG_PATH:-${DRPC_DIR}}
 
-        [ -z $KEYS_PATH ] && ! volume-exists drpc_keys && docker volume create drpc_keys
-        cp $DRPC_DIR/keys/* ${KEYS_PATH:-"/var/lib/docker/volumes/drpc_keys/_data/"}
-
         COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user pull
         COMPOSE_FILE=$DRPC_DIR/docker-compose.yml docker compose --env-file $DRPC_DIR/.env.user up -d --remove-orphans --build
 

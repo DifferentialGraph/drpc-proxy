@@ -2,12 +2,6 @@ volumes:
   certs:
     external: true
     name: reverse-proxy_certs
-  config:
-    external: true
-    name: drpc_config
-  keys:
-    external: true
-    name: drpc_keys
 
 networks:
   drpc-proxy:
