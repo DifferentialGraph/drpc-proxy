@@ -113,7 +113,7 @@ drpc-start() {
     CONFIG_PATH=$CONFIG_PATH \
     KEYS_PATH=$KEYS_PATH \
     COMPOSE_FILE=$DRPC_DIR/docker-compose.yml \
-    docker compose --env-file up -d --remove-orphans --build
+    docker compose up -d --remove-orphans --build
 
     if [ ! -z "$DOCKER_NETWORKS" ]; then
         nets=$(docker container inspect --format '{{range $net,$v := .NetworkSettings.Networks}}{{printf "%s\n" $net}}{{end}}' drpc-proxy)
