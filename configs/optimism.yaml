@@ -24,17 +24,17 @@ reth-archive:
         - name: txpool_content # TODO: should be disabled for rollup nodes
 
 geth-archive:
-  - id: optimism
+  - id: ${ID}
     chain: optimism
     labels:
-      provider: decisionBasis
+      provider: ${PROVIDER}
       archive: true
       has_pre_bedrock_redirect: true
     connection:
       generic:
         rpc:
-          url: "https://optimism.chainsland.xyz"
+          url: ${RPC}
         ws:
           frameSize: 20Mb
           msgSize: 50Mb
-          url: "wss://optimism.chainsland.xyz/ws"
+          url: ${WS}

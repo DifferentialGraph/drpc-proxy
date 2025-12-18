@@ -1,4 +1,4 @@
-erigon-archive:
+erigon-caplin:
   - id: ${ID}
     chain: eth-beacon-chain
     labels:

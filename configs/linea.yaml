@@ -1,4 +1,4 @@
-archive:
+geth-archive:
   - id: ${ID}
     chain: linea
     labels:
