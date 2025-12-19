@@ -1,4 +1,4 @@
-avaxgo-archive:
+avalanchego-archive:
   - id: ${ID}
     chain: avalanche
     labels:

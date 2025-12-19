@@ -7,8 +7,30 @@ nethermind-archive:
       archive: true
       has_pre_nitro_redirect: true
     method-groups:
+      disabled:
       enabled:
         - debug
+        - filter
+    methods:
+      disabled:
+      enabled:
+        - name: txpool_content # TODO: should be disabled for rollup nodes
+        # standard geth only
+        - name: debug_getRawBlock
+        - name: debug_getRawTransaction
+        - name: debug_getRawReceipts
+        - name: debug_getRawHeader
+        - name: debug_getBadBlocks
+        # non standard geth only slightly dangerous
+        - name: debug_intermediateRoots
+        - name: debug_dumpBlock
+        # standard geth and erigon
+        - name: debug_accountRange
+        - name: debug_getModifiedAccountsByNumber
+        - name: debug_getModifiedAccountsByHash
+        # non standard geth and erigon
+        - name: eth_getRawTransactionByHash
+        - name: eth_getRawTransactionByBlockHashAndIndex
     connection:
       generic:
         rpc:

@@ -7,19 +7,49 @@ erigon-archive:
         client_type: erigon
     method-groups:
       enable:
-        - trace
         - debug
         - filter
+        - trace
     methods:
+      disabled:
       enabled:
-        - name: erigon_forks
-        - name: erigon_getBalanceChangesInBlock
-        - name: erigon_getBlockByTimestamp
+        - name: txpool_content # TODO: should be disabled for rollup nodes
+        # standard geth and erigon
+        - name: debug_accountRange
+        - name: debug_getModifiedAccountsByNumber
+        - name: debug_getModifiedAccountsByHash
+        # non standard geth and erigon
+        - name: eth_getRawTransactionByHash
+        - name: eth_getRawTransactionByBlockHashAndIndex
+        # non standard erigon only
+        - name: eth_getBlockReceipts
+        - name: eth_protocolVersion
+        - name: eth_callMany
+        - name: eth_callBundle
+        - name: debug_accountAt
+        - name: debug_traceCallMany
         - name: erigon_getHeaderByHash
+        - name: erigon_getBlockReceiptsByBlockHash
         - name: erigon_getHeaderByNumber
-        - name: erigon_getLogs
         - name: erigon_getLogsByHash
+        - name: erigon_forks
+        - name: erigon_getBlockByTimestamp
+        - name: erigon_BlockNumber
+        - name: erigon_getLatestLogs
+        - name: erigon_getBalanceChangesInBlock
+        - name: erigon_getLogs
         - name: erigon_issuance
+        - name: ots_getInternalOperations
+        - name: ots_hasCode
+        - name: ots_getTransactionError
+        - name: ots_traceTransaction
+        - name: ots_getBlockDetails
+        - name: ots_getBlockDetailsByHash
+        - name: ots_getBlockTransactions
+        - name: ots_searchTransactionsBefore
+        - name: ots_searchTransactionsAfter
+        - name: ots_getTransactionBySenderAndNonce
+        - name: ots_getContractCreator
     connection:
       ethereum-pos:
         execution:
